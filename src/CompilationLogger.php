@@ -237,7 +237,7 @@ final class CompilationLogger implements CompilationLoggerInterface, \Serializab
      */
     private function errorLog($log)
     {
-        // error_log($log);
+        error_log($log);
         $this->log .= $log . PHP_EOL;
     }
 

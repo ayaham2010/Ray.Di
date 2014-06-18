@@ -160,14 +160,20 @@ final class DiCompiler implements InstanceInterface, \Serializable
             return $instance;
         }
         $hash = $this->classMap[$class];
-        /*
         error_log(sprintf(
             'ray/di.get     class:%s ref:%s',
             $class,
             $hash
         ));
-        */
-        $instance = $this->logger->newInstance($hash);
+
+        try {
+            $instance = $this->logger->newInstance($hash);
+        } catch (Compile $e) {
+            error_log($e);
+            list($provider, $tmpDir) = [self::$args[0], self::$args[3]];
+            $injector = self::createInjector($provider, $tmpDir);
+            $instance = $injector->getInstance($class);
+        }
 
         return $instance;
     }
@@ -187,9 +193,17 @@ final class DiCompiler implements InstanceInterface, \Serializable
         foreach ($mappedClass as $newClass) {
             $diCompiler->compile($newClass);
         }
+        $instance = $this->getInstanceSafe($diCompiler, $class);
+
+        return $instance;
+    }
+
+    private function getInstanceSafe(InstanceInterface $injector, $class)
+    {
         try {
-            $instance = $diCompiler->getInstance($class);
+            $instance = $injector->getInstance($class);
         } catch (Compile $e) {
+            error_log($e);
             list($provider, $tmpDir) = [self::$args[0], self::$args[3]];
             $injector = self::createInjector($provider, $tmpDir);
             $instance = $injector->getInstance($class);

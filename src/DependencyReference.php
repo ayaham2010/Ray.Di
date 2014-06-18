@@ -54,6 +54,7 @@ final class DependencyReference implements ProviderInterface, \Serializable
 
             return $this->instance;
         } catch (Compile $e) {
+            error_log($e);
             error_log((string) $this->logger);
 
             throw new Compile($this->type);
